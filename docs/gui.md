@@ -8,8 +8,10 @@ dark dialog — `camera_selector` (§6.1), driven from `main()` BEFORE
 `MainWindow` is created — listing every connected camera as
 `"N.  <name>   (<mono|colour> · WxH)"` (the enumeration index, the SDK name,
 and the body type + sensor size for disambiguation). The first entry is
-preselected; **Ok/Enter confirms, Cancel/Esc exits** the app without opening a
-camera (log line `[camera] no camera selected - exiting`). The main window
+preselected; **clicking an entry — or Return/Enter on the highlighted one
+(arrows move the highlight) — confirms it; there is no Ok button**, and
+**Cancel/Esc exits** the app without opening a camera (log line
+`[camera] no camera selected - exiting`). The main window
 appears only after the choice, and the worker opens exactly that body —
 remembered by its `CameraID` for every reconnect (a USB re-enumeration keeps
 the ID; if the body is gone entirely the first connected camera is opened
@@ -21,8 +23,11 @@ dialog (N = CameraID of a connected camera, else its list index; a value
 matching nothing exits 1 with the connected list on stderr). Headless
 self-tests (`--smoke`, `--vtest`, …) never show the dialog — they honour
 `--camera` or open the first connected camera. The dialog is a plain
-`QDialog` (list + `QDialogButtonBox` Ok/Cancel) with a scoped stylesheet; the
-app-wide dark theme already styles its buttons and labels.
+`QDialog` (list + a single Cancel button, `setMinimumWidth(170)` so it is
+wider than its text) with a scoped stylesheet; the app-wide dark theme
+already styles its button and labels. The interaction model is pinned by
+`--seltest` (offscreen QtTest driver: click/Return/Enter/arrows/Cancel/Esc,
+no camera needed).
 
 `MainWindow` is a 1440×900 window: `FrameView` on the left (expanding), a fixed
 ~420 px panel on the right. The **window title names the camera**

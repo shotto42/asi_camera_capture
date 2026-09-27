@@ -87,11 +87,15 @@ gone; it only reactivates if such a prefix appears again.
 `libgstreamer-plugins-base1.0-dev` — headers + the unversioned `.so`
 symlinks) while the runtime `.so.0` libs stayed: a plain `make` dies in
 `gst_video_encoder.cpp` with `gst/gst.h: No such file or directory`. The
-workaround: download the two debs rootless (`apt-get download
-libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgio-2.0-dev`,
-`dpkg-deb -x … /tmp/gstdev/x`), and build with two hand-written `.pc` files
+workaround: download the debs rootless (`apt-get download
+libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgio-2.0-dev
+libglib2.0-dev`, `dpkg-deb -x … /tmp/gstdev/x` — the `libglib2.0-dev` one
+provides `glibconfig.h`, a *generated* header the glib headers need: it lands
+in the extracted `usr/lib/x86_64-linux-gnu/glib-2.0/include`, which must be
+added to the `.pc` Cflags), and build with two hand-written `.pc` files
 in `/tmp/gstdev/pc` (Cflags = the extracted `gstreamer-1.0` + `glib-2.0`
-include dirs; Libs = `-l:libgstreamer-1.0.so.0 -l:libgstapp-1.0.so.0
+include dirs + that glib multiarch include dir; Libs =
+`-l:libgstreamer-1.0.so.0 -l:libgstapp-1.0.so.0
 -l:libglib-2.0.so.0 -l:libgobject-2.0.so.0 -l:libgio-2.0.so.0` — the
 *versioned* system libs by exact name, so the binary's `DT_NEEDED` keeps the
 runtime names): `PKG_CONFIG_PATH=/tmp/gstdev/pc make camera_app`. Re-install

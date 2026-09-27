@@ -4,9 +4,11 @@
 //
 // The enumeration only reads /sys (no camera is opened), so it is safe to run
 // before the worker thread starts and even while another process holds a
-// camera. The dialog is a plain QDialog with a QListWidget + Ok/Cancel; the
-// app-wide dark stylesheet already styles the buttons and labels, the list
-// gets its own scoped rules (see below).
+// camera. The dialog is a plain QDialog with a QListWidget: an entry is
+// confirmed by CLICKING it or with Return/Enter (the highlighted one) and
+// only a (wide) Cancel button remains — Esc exits. The app-wide dark
+// stylesheet already styles the button and labels, the list gets its own
+// scoped rules (see below).
 
 #include "camera_selector.h"
 
@@ -15,9 +17,12 @@
 #include <QAbstractItemView>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QIcon>
+#include <QKeySequence>
 #include <QLabel>
 #include <QListWidget>
 #include <QPushButton>
+#include <QShortcut>
 #include <QVBoxLayout>
 
 #include <cstdio>
@@ -107,11 +112,39 @@ int showCameraSelector(const std::vector<CameraOption>& cams)
     list->setCurrentRow(0);
     lay->addWidget(list, 1);
 
-    auto* btns = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
-    btns->button(QDialogButtonBox::Ok)->setDefault(true);   // Enter confirms, Esc cancels
+    // No Ok button: confirming is a choice on the list itself (a click, or
+    // Return/Enter on the highlighted entry — see below). Only Cancel
+    // remains; Esc still exits through the box's own reject handling.
+    auto* btns = new QDialogButtonBox(QDialogButtonBox::Cancel, &dlg);
+    auto* cancel = btns->button(QDialogButtonBox::Cancel);
+    cancel->setObjectName("camSelCancel");
+    cancel->setAutoDefault(false);   // Enter must never fall through to Cancel
+    cancel->setDefault(false);
+    // The only remaining button: wider than its text (the stylesheet's
+    // min-height 56 px + font already make it tall; the width is set here —
+    // a QSS min-width on the button does not constrain it). Plain text
+    // only: drop the theme's standard icon (the little red cross) and the
+    // "C" mnemonic (its underline) — user request.
+    cancel->setMinimumWidth(170);
+    cancel->setIcon(QIcon());
+    cancel->setText("Cancel");
     lay->addWidget(btns);
 
-    QObject::connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    // Mouse: clicking an entry highlights it and confirms that camera.
+    QObject::connect(list, &QListWidget::itemClicked, &dlg, &QDialog::accept);
+
+    // Keyboard: the list keeps the focus, arrows move the highlight, and
+    // Return (main row) or Enter (numpad) confirm the highlighted entry.
+    // QShortcuts fire before the key reaches the focused widget, so they
+    // win over any default-button handling.
+    list->setFocusPolicy(Qt::StrongFocus);
+    list->setFocus();
+    for (const Qt::Key key : { Qt::Key_Return, Qt::Key_Enter })
+    {
+        auto* confirm = new QShortcut(QKeySequence(key), &dlg);
+        QObject::connect(confirm, &QShortcut::activated, &dlg, &QDialog::accept);
+    }
+
     QObject::connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
 
     dlg.setMinimumWidth(440);

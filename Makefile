@@ -108,6 +108,8 @@ LDLIBS   := -lpthread
 PKG_CONFIG ?= pkg-config
 QT_CFLAGS := $(shell $(PKG_CONFIG) --cflags Qt6Widgets)
 QT_LIBS   := $(shell $(PKG_CONFIG) --libs Qt6Widgets)
+# Qt6Test for the offscreen --seltest driver (QTest::mouseClick/keyClick).
+QT_TEST_LIBS := $(shell $(PKG_CONFIG) --libs Qt6Test)
 CV_CFLAGS := $(shell $(PKG_CONFIG) --cflags opencv4)
 CV_LIBS   := $(shell $(PKG_CONFIG) --libs opencv4)
 GST_CFLAGS := $(shell $(PKG_CONFIG) --cflags gstreamer-1.0 gstreamer-app-1.0)
@@ -181,7 +183,7 @@ $(BUILD)/obj/moc_%.o: $(BUILD)/moc_%.cpp | $(BUILD)/obj
 -include $(OBJS:.o=.d)
 
 camera_app: $(OBJS) $(LIB)
-	$(CXX) -o $@ $(OBJS) $(RPATH) $(SDK_LIBS) $(QT_LIBS) $(CV_LIBS) $(GST_LIBS) $(LDLIBS)
+	$(CXX) -o $@ $(OBJS) $(RPATH) $(SDK_LIBS) $(QT_LIBS) $(QT_TEST_LIBS) $(CV_LIBS) $(GST_LIBS) $(LDLIBS)
 
 gui: camera_app
 	./camera_app

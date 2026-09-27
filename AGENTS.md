@@ -250,6 +250,11 @@ make smoke               # same as above
                          #   whole slider on a body with headroom). Prints WBTEST PASS/FAIL, exit 0/1.
 ./camera_app --bayer rggb # diagnostic override of a colour camera's reported
                          #   BayerPattern (rggb|bggr|grbg|gbrg); mono ignores it
+./camera_app --seltest    # offscreen QtTest driver for the pre-GUI camera-selector
+                         #   dialog (no camera): pins the interaction model — no Ok
+                         #   button, an entry confirms by CLICK or by Return/Enter on
+                         #   the highlighted row (arrows move the highlight), and the
+                         #   wider Cancel button / Esc exits. Prints SELTEST PASS/FAIL.
 ./camera_app --vtest --vtestser 0  # with --vtest: record 8-bit H.264 (MP4) instead
                          #   of the default .ser (frames counted from telemetry)
 make probes             # build the standalone raw-SDK probes (camera_probe, usb_bench, wb_probe)

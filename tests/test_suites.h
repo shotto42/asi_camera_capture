@@ -7,6 +7,7 @@
 //   ./camera_app --capstest    runCameraCapsSelfTest()
 //   ./camera_app --colourtest  runColourSelfTest()
 //   ./camera_app --wbtest      runWhiteBalanceSelfTest()
+//   ./camera_app --seltest     runCameraSelectorSelfTest()
 #pragma once
 
 // Writes 8/14-bit .ser ramp samples into samples/ and round-trip-validates
@@ -36,3 +37,10 @@ bool runColourSelfTest();
 // WB gains, both slider directions, exact (K, tint) <-> gain round trips, cap
 // clamping, and the AWB-follow quantization. Returns true on success.
 bool runWhiteBalanceSelfTest();
+
+// Camera-selector-dialog suite (offscreen Qt, no camera): drives the real
+// pre-GUI selector with synthetic input and pins its interaction model —
+// entries confirm by mouse click or Return/Enter on the highlighted row
+// (no Ok button), arrow keys move the highlight, and the wider Cancel
+// button / Esc exits. Returns true on success.
+bool runCameraSelectorSelfTest();

@@ -126,7 +126,7 @@ int main(int argc, char** argv)
     setvbuf(stderr, nullptr, _IONBF, 0);   // never lose a diagnostic line on a crash
 
     bool smoke = false, seqtest = false, sertest = false, uishot = false, frametest = false, vtest = false, prevtest = false, fpstest = false;
-    bool capstest = false, colourtest = false, wbtest = false;
+    bool capstest = false, colourtest = false, wbtest = false, seltest = false;
     int  bayerOverride = -1;      // --bayer rggb|bggr|grbg|gbrg (colour bodies only)
     QString camArg;               // --camera <CameraID|index> (multi-camera selection)
     QString uishotFile;
@@ -144,6 +144,7 @@ int main(int argc, char** argv)
         else if (std::strcmp(argv[i], "--capstest") == 0) capstest = true;
         else if (std::strcmp(argv[i], "--colourtest") == 0) colourtest = true;
         else if (std::strcmp(argv[i], "--wbtest") == 0)     wbtest = true;
+        else if (std::strcmp(argv[i], "--seltest") == 0)   seltest = true;
         else if (std::strcmp(argv[i], "--bayer") == 0 && i + 1 < argc)
         {
             // Escape hatch for a colour body whose reported BayerPattern does
@@ -212,6 +213,11 @@ int main(int argc, char** argv)
     // --frametest needs Qt (offscreen) but not the camera or GStreamer.
     if (frametest)
         return runFrameViewSelfTest() ? 0 : 1;
+
+    // --seltest drives the selector dialog offscreen (QtTest): no camera,
+    // no GStreamer.
+    if (seltest)
+        return runCameraSelectorSelfTest() ? 0 : 1;
 
     if (smoke || seqtest || uishot || vtest || prevtest || fpstest)
         qputenv("QT_QPA_PLATFORM", "offscreen"); // never pop a window during self-test
