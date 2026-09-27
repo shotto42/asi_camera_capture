@@ -82,6 +82,23 @@ The Makefile still carries a *dormant* conditional block that would bake
 `$ORIGIN` rpaths for a `.vendor/prefix` — a no-op now that the folder is
 gone; it only reactivates if such a prefix appears again.
 
+**This dev container's GStreamer headers (2026-09-27).** The container's
+`/usr` lost the GStreamer *development* packages (`libgstreamer1.0-dev` +
+`libgstreamer-plugins-base1.0-dev` — headers + the unversioned `.so`
+symlinks) while the runtime `.so.0` libs stayed: a plain `make` dies in
+`gst_video_encoder.cpp` with `gst/gst.h: No such file or directory`. The
+workaround: download the two debs rootless (`apt-get download
+libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgio-2.0-dev`,
+`dpkg-deb -x … /tmp/gstdev/x`), and build with two hand-written `.pc` files
+in `/tmp/gstdev/pc` (Cflags = the extracted `gstreamer-1.0` + `glib-2.0`
+include dirs; Libs = `-l:libgstreamer-1.0.so.0 -l:libgstapp-1.0.so.0
+-l:libglib-2.0.so.0 -l:libgobject-2.0.so.0 -l:libgio-2.0.so.0` — the
+*versioned* system libs by exact name, so the binary's `DT_NEEDED` keeps the
+runtime names): `PKG_CONFIG_PATH=/tmp/gstdev/pc make camera_app`. Re-install
+the dev packages into the container (`sudo apt install
+libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`) and the plain `make`
+works again.
+
 ### Building on ARM boards (Orange Pi / Raspberry Pi)
 
 All four Linux SDK libraries are vendored, so the same checkout builds on

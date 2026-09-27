@@ -353,3 +353,29 @@ shell invocations on this box — put scratch in the workspace) were useful:
   this environment — "requires missing"/"Unknown error" regardless of script
   contents, with or without `-d`/writable `HOME` — so the installed binary
   was not driven directly; its shipped source was used instead.)
+
+### 10.5 The multi-camera selector (2026-09-27, MM + MC both connected)
+
+User request: with two ASI cameras attached, the app must let you pick the
+body **before the full GUI appears**. `camera_selector` (enumeration + the
+pre-GUI dialog, driven from `main()`) was added; `CameraWorker` now opens the
+chosen `CameraID` (remembered across reconnects, first-connected fallback)
+instead of a hard-coded index 0. `--camera N` (CameraID first, then list
+index) selects without the dialog. Live verification, both bodies attached
+(MM = index 0 / id 0, MC = index 1 / id 1):
+
+- **Selector first, GUI second.** Plain `DISPLAY=:0 QT_QPA_PLATFORM=xcb
+  ./camera_app` mapped the "Select camera" dialog as the *only* window before
+  `MainWindow` existed (no `[cam]` line until a choice); `import` captured it
+  (both entries listed, first preselected, Ok default / Cancel). Driving
+  xdotool (`Down` + `Return`) picked the MC: log `[camera] selected ZWO
+  ASI178MC (id 1, index 1)`, `[cam] ZWO ASI178MC [2/2]`, colour GUI up
+  (title "ZWO ASI178MC Camera", RGB preview, WB row). `Esc` on a fresh launch
+  exited with `[camera] no camera selected - exiting` and no camera opened.
+- **`--camera 1 --uishot …`** opened the MC headlessly (`[2/2]`),
+  **`--camera 5`** exited 1 listing the connected bodies, and a plain launch
+  with the first entry confirmed opened the MM (`[1/2]`).
+- **`--smoke` on each body** through the selection path: `--smoke` (auto →
+  MM, mono, exit 0, `[1/2]`) and `--smoke --camera 1` (MC, colour, exit 0,
+  `[2/2]`, WB step live, `ser=1`, `fps=60.2`). Headless modes never show the
+  dialog.

@@ -19,6 +19,13 @@
   Bus/device numbers change on re-plug (seen on
   this machine: `002/003` then `002/005`), so never hardcode them — read the
   current ones from `lsusb` (vendor `03c3`) and `/sys/bus/usb/devices/`.
+  **Both bodies are connected at once** (2026-09-27): the SDK enumeration
+  lists MM first (index 0, CameraID 0) and MC second (index 1, CameraID 1)
+  — the order is whatever the kernel hands out and can swap on re-plug. The
+  app opens one body at a time: two or more connected cameras get the pre-GUI
+  selector (or `--camera N`, §7), and the worker remembers the opened
+  CameraID for reconnects (first-connected fallback, §6.2). `camera_probe`
+  dumps every connected body.
 - **"App waits for camera" = the app user cannot open the device node.** The
   node `/dev/bus/usb/NNN/NNN` exists (udev/devtmpfs creates it) but is
   `0664` root-owned, so a non-root user gets `EACCES`. The SDK still

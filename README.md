@@ -157,6 +157,17 @@ to keep your captures.
 (If you're on a Wayland session and the window doesn't appear, launch it with
 `DISPLAY=:0 QT_QPA_PLATFORM=xcb ./camera_app`.)
 
+## Several cameras connected
+
+If **more than one ASI camera** is connected, the app shows a **selector
+before the main window appears** — a small window listing every connected
+camera (its index, name, mono/colour and sensor size) so you can pick the
+body you want. The app opens exactly the one you choose (the window title
+names it); **Cancel** quits. With a single camera there is no dialog — it is
+opened as before. You can also select from the command line with
+`./camera_app --camera N` (N = the number shown in the selector, or the
+camera's internal ID), which skips the dialog.
+
 ## First time on a new machine
 
 The app needs write access to the camera's USB device node. Install the udev
